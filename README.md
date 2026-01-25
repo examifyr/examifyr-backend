@@ -24,3 +24,10 @@ examifyr-backend/
 ├── requirements.txt     # Python dependencies
 ├── start-local.sh       # One-command local startup script
 ├── README.md
+
+---
+
+## 🔌 API Endpoints
+
+- `GET /health` — Returns service health status
+- `GET /version` — Returns service name and version
