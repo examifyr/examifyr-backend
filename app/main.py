@@ -46,7 +46,7 @@ class QuizGenerateRequest(BaseModel):
 class QuizQuestion(BaseModel):
     id: int
     question: str
-    choices: list[str] = Field(min_length=4, max_length=4)
+    choices: list[str] = Field(min_items=4, max_items=4)
     answer_index: int = Field(ge=0, le=3)
     explanation: str
 

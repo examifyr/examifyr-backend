@@ -91,8 +91,6 @@ examifyr-backend/
 
 - `200` Success
 - `422` Validation error (FastAPI default)
-- `401` Not implemented yet (authentication planned)
-- `504` Not implemented yet (async/queue planned)
 
 **Validation behavior**
 
