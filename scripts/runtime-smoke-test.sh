@@ -17,13 +17,7 @@ fail() {
 
 print_json_if_possible() {
   local body="$1"
-  if formatted=$(printf '%s' "$body" | python3 - <<'PY' 2>/dev/null); then
-import json
-import sys
-
-data = json.load(sys.stdin)
-print(json.dumps(data, indent=2, sort_keys=True))
-PY
+  if formatted=$(printf '%s' "$body" | python3 -c 'import json,sys; data=json.load(sys.stdin); print(json.dumps(data, indent=2, sort_keys=True))' 2>/dev/null); then
     echo "$formatted"
   else
     echo "$body"
