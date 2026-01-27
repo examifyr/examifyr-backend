@@ -1,8 +1,7 @@
 from uuid import UUID
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
 from app.quiz.generator import DeterministicQuizGenerator
 from app.quiz.models import QuizGenerateRequest, QuizGenerateResponse
@@ -53,5 +52,5 @@ async def generate_quiz(payload: QuizGenerateRequest):
 async def get_quiz(quiz_id: UUID):
     quiz = quiz_service.get_quiz(quiz_id)
     if quiz is None:
-        return JSONResponse(status_code=404, content={"error": "Quiz not found"})
+        raise HTTPException(status_code=404, detail="Quiz not found")
     return quiz
