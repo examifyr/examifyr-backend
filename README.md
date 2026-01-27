@@ -163,6 +163,16 @@ examifyr-backend/
 
 ---
 
+## 🧪 Runtime Smoke Tests
+
+Run against a running backend instance:
+
+`BASE_URL=http://127.0.0.1:8000 ./scripts/runtime-smoke-test.sh`
+
+Note: This script assumes the server is already running.
+
+---
+
 ## 🚧 MVP Limitations / Next Steps
 
 - In-memory generation only (not persisted)

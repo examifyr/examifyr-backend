@@ -31,7 +31,7 @@ request() {
 
   if [ -n "$payload" ]; then
     local response
-    response=$(curl -sS --max-time 10 -X "$method" "$url" \
+    response=$(curl -sS -X "$method" "$url" \
       -H "Content-Type: application/json" \
       -d "$payload" \
       -w "\n%{http_code}")
@@ -39,7 +39,7 @@ request() {
     RESPONSE_STATUS="${response##*$'\n'}"
   else
     local response
-    response=$(curl -sS --max-time 10 -X "$method" "$url" -w "\n%{http_code}")
+    response=$(curl -sS -X "$method" "$url" -w "\n%{http_code}")
     RESPONSE_BODY="${response%$'\n'*}"
     RESPONSE_STATUS="${response##*$'\n'}"
   fi
