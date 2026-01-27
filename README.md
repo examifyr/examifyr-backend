@@ -32,6 +32,7 @@ examifyr-backend/
 - `GET /health` — Returns service health status
 - `GET /version` — Returns service name and version
 - `POST /api/v1/quizzes/generate` — Generates a quiz (MVP)
+- `GET /api/v1/quizzes/{quiz_id}` — Retrieves a generated quiz
 
 ---
 
@@ -78,7 +79,7 @@ examifyr-backend/
 **Notes**
 
 - Each question includes exactly 4 choices (MVP)
-- `quiz_id` is a one-time-use identifier; no GET endpoint available yet
+- `quiz_id` is generated and stored in-memory (IDs vanish after restart)
 - Quizzes are generated in-memory; persistence and async generation are planned for a future sprint
 
 **Request fields**
@@ -114,13 +115,51 @@ examifyr-backend/
 
 ---
 
+## 📥 Quiz Retrieval (MVP)
+
+**Endpoint**
+
+`GET /api/v1/quizzes/{quiz_id}`
+
+**Response (200)**
+
+```json
+{
+  "quiz_id": "9a2d9a6b-3f2a-4c34-8d1a-0e2d2e1f4b5c",
+  "topic": "python lists",
+  "difficulty": "easy",
+  "questions": [
+    {
+      "id": 1,
+      "question": "What is the primary purpose of a Python list? (easy)",
+      "choices": [
+        "To store an ordered, mutable collection of items.",
+        "To store only unique items without order.",
+        "To map keys to values in a fixed structure.",
+        "To define an immutable sequence of characters."
+      ],
+      "answer_index": 0,
+      "explanation": "Lists are ordered and mutable, ideal for sequences you need to change."
+    }
+  ]
+}
+```
+
+**Status codes**
+
+- `200` Success
+- `404` Quiz not found
+
+---
+
 ## ✅ Manual Smoke Test Guide
 
 | Step | Command | Expected |
 | --- | --- | --- |
 | 1 | `curl -X POST http://localhost:8000/api/v1/quizzes/generate -H "Content-Type: application/json" -d '{"topic":"Python Programming","difficulty":"medium","num_questions":3}'` | `200` with `quiz_id`, `topic`, `questions` |
-| 2 | `curl -X POST http://localhost:8000/api/v1/quizzes/generate -H "Content-Type: application/json" -d '{"topic":"   ","num_questions":5}'` | `422` validation error |
-| 3 | `curl -X POST http://localhost:8000/api/v1/quizzes/generate -H "Content-Type: application/json" -d '{"topic":"Math","num_questions":21}'` | `422` validation error |
+| 2 | `curl http://localhost:8000/api/v1/quizzes/{quiz_id}` | `200` with the same quiz payload |
+| 3 | `curl -X POST http://localhost:8000/api/v1/quizzes/generate -H "Content-Type: application/json" -d '{"topic":"   ","num_questions":5}'` | `422` validation error |
+| 4 | `curl -X POST http://localhost:8000/api/v1/quizzes/generate -H "Content-Type: application/json" -d '{"topic":"Math","num_questions":21}'` | `422` validation error |
 
 ---
 
