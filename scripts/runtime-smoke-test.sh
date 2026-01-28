@@ -2,6 +2,7 @@
 set -euo pipefail
 
 BASE_URL="${BASE_URL:-http://127.0.0.1:8000}"
+BASE_URL="${BASE_URL%/}"
 
 PY_VALIDATE_GENERATE=$(cat <<'PY'
 import json, sys
