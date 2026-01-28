@@ -13,9 +13,31 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
           cache: "pip"
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
       - name: Ensure test script executable
         run: chmod +x scripts/test.sh
       - name: Run backend tests
         run: ./scripts/test.sh
+      - name: Run runtime smoke tests
+        run: |
+          set -euo pipefail
+          chmod +x scripts/runtime-smoke-test.sh
+          python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 > smoke-server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'if [ -n "${SERVER_PID:-}" ] && kill -0 "$SERVER_PID" 2>/dev/null; then kill "$SERVER_PID"; fi' EXIT
+          for _ in $(seq 1 30); do
+            status=$(curl -sS --max-time 2 -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/health 2>/dev/null || true)
+            if [ "$status" = "200" ]; then
+              break
+            fi
+            sleep 1
+          done
+          if [ "$status" != "200" ]; then
+            echo "Server failed to start"
+            tail -n 200 smoke-server.log || true
+            exit 1
+          fi
+          BASE_URL=http://127.0.0.1:8000 ./scripts/runtime-smoke-test.sh
