@@ -70,34 +70,7 @@ if [ "$RESPONSE_STATUS" != "200" ]; then
   fail "Generate quiz (expected 200)" "$RESPONSE_BODY"
 fi
 
-if quiz_id=$(printf '%s' "$RESPONSE_BODY" | python3 - <<'PY'); then
-import json
-import sys
-
-data = json.load(sys.stdin)
-required = {"quiz_id", "topic", "difficulty", "questions"}
-missing = required - set(data.keys())
-if missing:
-    raise SystemExit(f"Missing keys: {missing}")
-
-quiz_id = data["quiz_id"]
-if not quiz_id:
-    raise SystemExit("quiz_id is empty")
-if data["topic"] != "Python lists":
-    raise SystemExit(f"topic mismatch: {data['topic']}")
-if data["difficulty"] != "easy":
-    raise SystemExit(f"difficulty mismatch: {data['difficulty']}")
-if len(data["questions"]) != 3:
-    raise SystemExit(f"questions length mismatch: {len(data['questions'])}")
-for question in data["questions"]:
-    if len(question.get("choices", [])) != 4:
-        raise SystemExit("choices length mismatch")
-    answer_index = question.get("answer_index", -1)
-    if not (0 <= answer_index <= 3):
-        raise SystemExit("answer_index out of range")
-
-print(quiz_id)
-PY
+if quiz_id=$(printf '%s' "$RESPONSE_BODY" | python3 -c 'import json,sys; data=json.load(sys.stdin); required={"quiz_id","topic","difficulty","questions"}; missing=required-set(data.keys()); sys.exit(f"Missing keys: {missing}") if missing else None; quiz_id=data.get("quiz_id"); sys.exit("quiz_id is empty") if not quiz_id else None; sys.exit(f"topic mismatch: {data.get(\"topic\")}") if data.get("topic")!="Python lists" else None; sys.exit(f"difficulty mismatch: {data.get(\"difficulty\")}") if data.get("difficulty")!="easy" else None; sys.exit(f"questions length mismatch: {len(data.get(\"questions\", []))}") if len(data.get("questions", []))!=3 else None; [sys.exit("choices length mismatch") if len(q.get("choices", []))!=4 else None for q in data.get("questions", [])]; [sys.exit("answer_index out of range") if not (0<=q.get("answer_index",-1)<=3) else None for q in data.get("questions", [])]; print(quiz_id)'); then
   pass "Generate quiz"
 else
   fail "Generate quiz response validation failed" "$RESPONSE_BODY"
@@ -108,14 +81,7 @@ request "GET" "$BASE_URL/api/v1/quizzes/$quiz_id"
 if [ "$RESPONSE_STATUS" != "200" ]; then
   fail "Get quiz by id (expected 200)" "$RESPONSE_BODY"
 fi
-if ! printf '%s' "$RESPONSE_BODY" | python3 - <<PY; then
-import json
-import sys
-
-data = json.load(sys.stdin)
-if data.get("quiz_id") != "$quiz_id":
-    raise SystemExit("quiz_id mismatch")
-PY
+if ! EXPECTED_QUIZ_ID="$quiz_id" printf '%s' "$RESPONSE_BODY" | python3 -c 'import json,os,sys; data=json.load(sys.stdin); expected=os.environ["EXPECTED_QUIZ_ID"]; sys.exit("quiz_id mismatch") if data.get("quiz_id") != expected else None; sys.exit("missing questions") if "questions" not in data else None'; then
   fail "Get quiz validation failed" "$RESPONSE_BODY"
 fi
 pass "Get quiz by ID"

@@ -29,7 +29,7 @@ jobs:
           SERVER_PID=$!
           trap 'if [ -n "${SERVER_PID:-}" ] && kill -0 "$SERVER_PID" 2>/dev/null; then kill "$SERVER_PID"; fi' EXIT
           for _ in $(seq 1 30); do
-            status=$(curl -sS --max-time 2 -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/health || true)
+            status=$(curl -sS --max-time 2 -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/health 2>/dev/null || true)
             if [ "$status" = "200" ]; then
               break
             fi
