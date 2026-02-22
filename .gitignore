@@ -7,5 +7,12 @@ __pycache__/
 
 # OS
 .DS_Store
+
+# IDEs
 .idea/
+.vscode/
 .cursor/
+
+# Env (never commit secrets)
+.env
+.env.*
