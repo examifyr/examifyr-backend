@@ -41,16 +41,17 @@ latest_tag="$(git describe --tags --abbrev=0 2>/dev/null || echo "")"
 
 # Commits since last tag
 if [[ -n "$latest_tag" ]]; then
-  commits="$(git log "$latest_tag"..HEAD --pretty=format:%s 2>/dev/null || true)"
+  commits="$(git log "$latest_tag"..HEAD --pretty=format:%B 2>/dev/null || true)"
 else
-  commits="$(git log --pretty=format:%s 2>/dev/null || true)"
+  commits="$(git log --pretty=format:%B 2>/dev/null || true)"
 fi
 
 # Determine highest bump from commits
 bump="none"
+breaking_re='^[a-z]+(\([^)]+\))?!:'
 while IFS= read -r line; do
   [[ -z "$line" ]] && continue
-  if [[ "$line" == *"BREAKING CHANGE"* ]] || [[ "$line" == *"!:"* ]]; then
+  if [[ "$line" == *"BREAKING CHANGE"* ]] || [[ "$line" =~ $breaking_re ]]; then
     bump="major"
     break
   fi
